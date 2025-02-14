@@ -5,10 +5,9 @@
 This GitHub contains an my work for the week 6 assignment which focused on an image processing pipeline in Go, utilizing concurrency with goroutines to optimize performance. The project is inspired by Amrit Singh's example and explores how Go's concurrency model can reduce processing times for data engineering tasks.  
 
 ## Files 
-week_6/
-├── with_goroutines/      # Directory containing the implementation with goroutines
-├── without_goroutines/   # Directory containing the implementation without goroutines
-└── README.md             # Project documentation
+- **with_goroutines/** → Contains the concurrent implementation using Go's goroutines.  
+- **without_goroutines/** → Contains the sequential implementation without goroutines.  
+- **README.md** → Documentation for the project.  
 
 ## Repository  
 
