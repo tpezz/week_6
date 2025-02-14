@@ -5,19 +5,20 @@ import (
 	imageprocessing "goroutines_pipeline/image_processing"
 	"image"
 	"strings"
+	"time"
 )
 
+// create job struct
 type Job struct {
 	InputPath string
 	Image     image.Image
 	OutPath   string
 }
 
+// Read image, create job, and send it to the channel
 func loadImage(paths []string) <-chan Job {
 	out := make(chan Job)
 	go func() {
-		// For each input path create a job and add it to
-		// the out channel
 		for _, p := range paths {
 			job := Job{InputPath: p,
 				OutPath: strings.Replace(p, "images/", "images/output/", 1)}
@@ -29,12 +30,11 @@ func loadImage(paths []string) <-chan Job {
 	return out
 }
 
+// REad from channel, Resize image and send it to the channel
 func resize(input <-chan Job) <-chan Job {
 	out := make(chan Job)
 	go func() {
-		// For each input job, create a new job after resize and add it to
-		// the out channel
-		for job := range input { // Read from the channel
+		for job := range input {
 			job.Image = imageprocessing.Resize(job.Image)
 			out <- job
 		}
@@ -43,10 +43,11 @@ func resize(input <-chan Job) <-chan Job {
 	return out
 }
 
+// Read from channel, convert image to grayscale and send it to the channel
 func convertToGrayscale(input <-chan Job) <-chan Job {
 	out := make(chan Job)
 	go func() {
-		for job := range input { // Read from the channel
+		for job := range input {
 			job.Image = imageprocessing.Grayscale(job.Image)
 			out <- job
 		}
@@ -55,6 +56,7 @@ func convertToGrayscale(input <-chan Job) <-chan Job {
 	return out
 }
 
+// Read from channel, write image to folder and send success to the channel
 func saveImage(input <-chan Job) <-chan bool {
 	out := make(chan bool)
 	go func() {
@@ -68,18 +70,21 @@ func saveImage(input <-chan Job) <-chan bool {
 }
 
 func main() {
-
-	imagePaths := []string{"images/image1.jpeg",
-		"images/image2.jpeg",
-		"images/image3.jpeg",
-		"images/image4.jpeg",
+	// Start the timer
+	startTime := time.Now()
+	// Define image paths
+	imagePaths := []string{"images/image1.jpg",
+		"images/image2.jpg",
+		"images/image3.jpg",
+		"images/image4.jpg",
 	}
-
+	// Start go routines for each step to get parallel processing
 	channel1 := loadImage(imagePaths)
 	channel2 := resize(channel1)
 	channel3 := convertToGrayscale(channel2)
 	writeResults := saveImage(channel3)
 
+	//print success or failure
 	for success := range writeResults {
 		if success {
 			fmt.Println("Success!")
@@ -87,4 +92,7 @@ func main() {
 			fmt.Println("Failed!")
 		}
 	}
+	// stop time and print it
+	elapsedTime := time.Since(startTime)
+	fmt.Printf("Total processing time: %s\n", elapsedTime)
 }
